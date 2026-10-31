@@ -1,29 +1,90 @@
-<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'">
 <title>AI Weekly</title>
 <style>
-body{font-family:system-ui;margin:1rem;background:#f4f4f5}
-#g{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
-.c{background:#fff;border-radius:12px;padding:14px}
-h2{font-size:1rem;margin:0 0 8px}
-li{margin:6px 0}small{color:#666}
+:root{--bg:#f6f4ef;--card:#fff;--ink:#1a1a1a;--muted:#6b6b6b;--line:#e6e2d9}
+@media(prefers-color-scheme:dark){:root{--bg:#121212;--card:#1c1c1e;--ink:#ececec;--muted:#9a9a9a;--line:#2c2c2e}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:0 20px 48px}
+header{text-align:center;padding:44px 0 24px;border-bottom:3px double var(--line);margin-bottom:28px}
+header h1{font:700 clamp(2.2rem,6vw,3.6rem)/1.1 Georgia,"Times New Roman",serif;margin:0;letter-spacing:-.02em}
+header p{margin:8px 0 0;color:var(--muted)}
+#date{text-transform:uppercase;letter-spacing:.12em;font-size:.75rem}
+a{color:inherit;text-decoration-color:var(--line);text-underline-offset:3px}
+a:hover{text-decoration-color:currentColor}
+.hero{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:28px;margin-bottom:20px}
+.kicker{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:hsl(var(--h,12) 70% 45%)}
+.hero h2{font:700 clamp(1.5rem,3.5vw,2.2rem)/1.2 Georgia,serif;margin:8px 0}
+.src{color:var(--muted);font-size:.8rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-top:4px solid hsl(var(--h) 70% 50%);border-radius:14px;padding:18px 20px}
+.card h3{margin:0 0 10px;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:hsl(var(--h) 70% 45%)}
+.card ol{margin:0;padding:0;list-style:none;counter-reset:n}
+.card li{counter-increment:n;padding:10px 0 10px 28px;position:relative;border-top:1px solid var(--line)}
+.card li:first-child{border-top:0}
+.card li::before{content:counter(n);position:absolute;left:0;top:10px;font:700 1rem Georgia,serif;color:var(--muted)}
+.card li a{font-weight:600;line-height:1.35}
+.card li .src{display:block;margin-top:2px}
+@media(min-width:760px){.wide{grid-column:span 2}.wide ol{columns:2;column-gap:28px}.wide li{break-inside:avoid}}
+footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:36px}
 </style>
-<h1>AI Weekly</h1><div id="g"></div>
+<div class="wrap">
+  <header>
+    <div id="date"></div>
+    <h1>AI Weekly</h1>
+    <p>The AI news that matters for work and life. No hype, no doom.</p>
+  </header>
+  <main id="app"></main>
+  <footer>Curated automatically each Monday. Headlines link to their original publishers.</footer>
+</div>
 <script>
-fetch("data.json").then(r=>r.json()).then(d=>{
-  const g=document.getElementById("g");
-  for(const [cat,list] of Object.entries(d)){
-    const c=document.createElement("div");c.className="c";
-    const h=document.createElement("h2");h.textContent=cat;c.append(h);
-    const ul=document.createElement("ul");
-    for(const i of list){
-      const li=document.createElement("li"),a=document.createElement("a");
-      a.textContent=i.title;
-      if(/^https:\/\//.test(i.link)){a.href=i.link;a.rel="noopener noreferrer";}
-      li.append(a);
-      if(i.source){const s=document.createElement("small");s.textContent=" · "+i.source;li.append(s);}
-      ul.append(li);
-    }
-    c.append(ul);g.append(c);
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x)e.textContent=x;return e};
+const clean=(t,s)=>{
+  if(s&&t.endsWith(" - "+s))return t.slice(0,-(s.length+3));
+  const k=t.lastIndexOf(" - ");
+  return(k>20&&t.length-k<45)?t.slice(0,k):t;
+};
+const link=i=>{
+  const a=el("a","",clean(i.title,i.source));
+  if(/^https:\/\//.test(i.link)){a.href=i.link;a.rel="noopener noreferrer";a.target="_blank"}
+  return a;
+};
+(async()=>{
+  const r=await fetch("data.json"),d=await r.json();
+  const lm=r.headers.get("last-modified");
+  document.getElementById("date").textContent=new Date(lm||Date.now())
+    .toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
+  const app=document.getElementById("app");
+  const cats=Object.keys(d).filter(c=>d[c].length);
+  const hue=c=>({"Food for thought":280})[c]??((cats.indexOf(c)*47+12)%360);
+  // hero = best-scored item overall
+  const all=cats.flatMap(c=>d[c].map(i=>({...i,c})));
+  const lead=all.sort((a,b)=>b.score-a.score)[0];
+  if(lead){
+    const h=el("section","hero");h.style.setProperty("--h",hue(lead.c));
+    const h2=el("h2");h2.append(link(lead));
+    h.append(el("div","kicker","Top story · "+lead.c),h2);
+    if(lead.source)h.append(el("div","src",lead.source));
+    app.append(h);
+    d[lead.c]=d[lead.c].filter(i=>i.link!==lead.link);
   }
-});
+  const grid=el("div","grid");
+  for(const c of cats){
+    const list=d[c];if(!list.length)continue;
+    const card=el("section","card"+(list.length>=4?" wide":""));
+    card.style.setProperty("--h",hue(c));
+    card.append(el("h3","",c));
+    const ol=el("ol");
+    for(const i of list){
+      const li=el("li");li.append(link(i));
+      if(i.source)li.append(el("span","src",i.source));
+      ol.append(li);
+    }
+    card.append(ol);grid.append(card);
+  }
+  app.append(grid);
+})();
 </script>
