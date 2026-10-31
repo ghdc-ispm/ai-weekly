@@ -9,8 +9,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@PASTE_FULL_SHA
-      - uses: actions/setup-python@PASTE_FULL_SHA
+      - uses: actions/checkout@f93ca50bde35f63a65c67fc94cc8821ead20e631
+      - uses: actions/setup-python@8549b9f8f590ad24eab7482f36f6e1e24d34597b
         with: { python-version: "3.13" }
       - run: python scripts/build.py
         env:
