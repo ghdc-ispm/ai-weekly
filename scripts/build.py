@@ -6,15 +6,14 @@ import email.utils
 # ---------- config ----------
 US = "&hl=en&gl=US&ceid=US:en"
 CH = "&hl=en&gl=CH&ceid=CH:en"
-CH_DE = "&hl=de&gl=CH&ceid=CH:de"
 
 QUERIES = ["ChatGPT", "AI assistant", "AI jobs workplace", "AI privacy",
            "AI tools", "AI software business"]
-# Swiss queries: AI's IMPACT on employment (not job ads)
-SWISS = [("Switzerland artificial intelligence job cuts", CH),
-         ("Swiss companies AI layoffs automation", CH),
-         ("AI impact Swiss labour market", CH),
-         ("KI Stellenabbau Schweiz", CH_DE)]
+# Swiss queries (English only): AI and the job market, not job ads
+SWISS = [("artificial intelligence Swiss labour market", CH),
+         ("AI Switzerland employees workplace skills", CH),
+         ("Swiss employers AI hiring training", CH),
+         ("Switzerland AI jobs study report", CH)]
 PER_QUERY = 20     # items kept per query, so late queries are not cut off
 MAX_ITEMS = 200
 
@@ -83,11 +82,12 @@ business models or software (a question headline is fine if it points at a real,
 specific tension).
 Drop (<=3): existential/doom, vague hype, listicles, PR/funding, celebrity/stock
 chatter, rewritten press releases, job postings, recruiting ads.
-Category Work & Jobs = news about AI's IMPACT on employment: layoffs, hiring
-freezes, automation of roles, reskilling, labour-market studies, union or
-regulatory reactions. NOT Work & Jobs, score 0: job postings, recruiting ads,
-"AI jobs available", salary guides, career-advice listicles, "top skills to
-get hired".
+Category Work & Jobs = news about AI and the job market: hiring trends, skills
+in demand, reskilling and training, labour-market studies and statistics,
+employer policies on AI, union or regulatory reactions, and also layoffs when
+AI is the stated cause. NOT Work & Jobs, score 0: job postings, recruiting
+ads, "AI jobs available", salary guides, career-advice listicles, "top skills
+to get hired".
 swiss: true ONLY if the story is specifically about Switzerland (Swiss
 employers, workers, labour market, unions, regulation or companies).
 type: news | howto | analysis | hype
