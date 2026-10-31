@@ -182,7 +182,9 @@ if cand:
              + "\n".join(f"{n}: [{c['lab']}] {short(c['title'])} | {c['snip']}"
                          for n, c in enumerate(cand)))
         labs = []
-        for r in gemini(p, schema4):
+        rated_labs = gemini(p, schema4)
+        print("lab kinds:", [(cand[r["id"]]["lab"], r["kind"]) for r in rated_labs if 0 <= r["id"] < len(cand)])
+        for r in rated_labs:
             if 0 <= r["id"] < len(cand) and r["kind"] != "other":
                 c = cand[r["id"]]
                 labs.append({"title": c["title"], "link": c["link"], "source": c["lab"]})
