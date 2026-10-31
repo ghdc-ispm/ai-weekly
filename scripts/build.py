@@ -112,6 +112,14 @@ if len(kept) > 1:
                     del kept[i]
     except Exception as e:
         print("dedupe skipped:", e)   # keep everything rather than fail
+# 6. group, write latest + weekly archive
+out = {}
+for k in kept.values():
+    cat = "Food for thought" if k["type"] == "analysis" else k["category"]
+    out.setdefault(cat, []).append({x: k[x] for x in ("title", "link", "source", "score", "also") if x in k})
+for c in out:
+    out[c] = sorted(out[c], key=lambda x: -x["score"])[:5]
+    
 # 5b. frontier labs: official sources
 LABS = {
   "OpenAI":    ["https://openai.com/news/rss.xml", "site:openai.com/news"],
@@ -184,13 +192,6 @@ if cand:
     except Exception as e:
         print("labs skipped:", e)
         
-# 6. group, write latest + weekly archive
-out = {}
-for k in kept.values():
-    cat = "Food for thought" if k["type"] == "analysis" else k["category"]
-    out.setdefault(cat, []).append({x: k[x] for x in ("title", "link", "source", "score", "also") if x in k})
-for c in out:
-    out[c] = sorted(out[c], key=lambda x: -x["score"])[:5]
 
 y, w, _ = datetime.date.today().isocalendar()
 wk = f"{y}-W{w:02d}"
