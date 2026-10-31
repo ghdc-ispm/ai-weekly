@@ -21,31 +21,37 @@ a:hover{text-decoration-color:currentColor}
 .hero h2{font:700 clamp(1.35rem,4.5vw,2.2rem)/1.2 Georgia,serif;margin:8px 0}
 .src{color:var(--muted);font-size:.8rem}
 
-/* fixed grid: 3 columns, 2 rows; Frontier labs below, full width */
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+/* fixed grid: 3 columns x 2 rows, then Frontier labs full width */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
 .card{display:flex;flex-direction:column;height:var(--ch);overflow:hidden;background:var(--card);border:1px solid var(--line);border-top:4px solid hsl(var(--h) 70% 50%);border-radius:14px;padding:18px 20px}
+.card.open{height:auto}
 .card h3{flex:none;margin:0 0 10px;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:hsl(var(--h) 70% 45%)}
 .card ol{flex:1;min-height:0;overflow:hidden;margin:0;padding:0;list-style:none;counter-reset:n}
+.card.open ol{flex:none;overflow:visible}
 .card li{counter-increment:n;padding:10px 0 10px 28px;position:relative;border-top:1px solid var(--line)}
 .card li:first-child{border-top:0}
 .card li::before{content:counter(n);position:absolute;left:0;top:10px;font:700 1rem Georgia,serif;color:var(--muted)}
-.card li a{font-weight:600;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.card li .src{display:block;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.card li.more{counter-increment:none;color:var(--muted);font-weight:700;letter-spacing:.2em}
+.card li a{font-weight:600;line-height:1.35}
+.card li .src{display:block;margin-top:2px}
+.card li.hid{display:none}
+.card.open li.hid{display:block}
+.card li.more{counter-increment:none;padding-left:0}
 .card li.more::before{content:none}
+.card li.more button{background:none;border:0;padding:4px 0;font:inherit;font-size:.85rem;font-weight:700;color:hsl(var(--h) 70% 45%);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 .labs{height:var(--lh);margin-top:16px}
+.labs.open{height:auto}
 .labs ol{display:grid;grid-template-columns:repeat(3,1fr);column-gap:28px;align-content:start}
 .labs li,.labs li:first-child{border-top:0;border-bottom:1px solid var(--line)}
+.labs li.more{grid-column:1/-1;border-bottom:0}
 .past{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:28px}
 .past a{display:inline-block;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--card);text-decoration:none;font-size:.8rem}
 footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:36px}
 
-/* tablet: 2 columns */
 @media(max-width:899px){
   .grid{grid-template-columns:repeat(2,1fr)}
   .labs ol{grid-template-columns:repeat(2,1fr)}
 }
-/* phone: 1 column, natural height, nothing truncated */
+/* phone: single column, natural height, nothing hidden */
 @media(max-width:600px){
   :root{--ch:auto;--lh:auto}
   .grid{grid-template-columns:1fr}
@@ -56,8 +62,6 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:36px}
   .card{padding:14px 16px;border-radius:12px}
   .card li{padding:12px 0 12px 26px}
   .card li::before{top:12px}
-  .card li a{display:inline;-webkit-line-clamp:unset}
-  .card li .src{white-space:normal}
 }
 </style>
 <div class="wrap">
@@ -81,12 +85,23 @@ const link=i=>{
   if(/^https:\/\//.test(i.link)){a.href=i.link;a.rel="noopener noreferrer";a.target="_blank"}
   return a;
 };
-// if the list overflows its box, drop items from the end and show "…"
-const fit=ol=>{
+// if items overflow the fixed card height: hide the extras and add a "Read more" button
+const fit=card=>{
+  const ol=card.querySelector("ol");
   const over=()=>ol.scrollHeight>ol.clientHeight+1;
   if(!over())return;
-  ol.append(el("li","more","…"));
-  while(over()&&ol.children.length>2)ol.children[ol.children.length-2].remove();
+  const items=[...ol.querySelectorAll("li")];
+  const li=el("li","more"),b=el("button","","Read more…");
+  b.type="button";b.setAttribute("aria-expanded","false");
+  li.append(b);ol.append(li);
+  let hidden=0;
+  for(let k=items.length-1;k>0&&over();k--){items[k].classList.add("hid");hidden++}
+  b.textContent="Read more… (+"+hidden+")";
+  b.onclick=()=>{
+    const open=card.classList.toggle("open");
+    b.setAttribute("aria-expanded",open);
+    b.textContent=open?"Show less":"Read more… (+"+hidden+")";
+  };
 };
 (async()=>{
   // ?w=2026-W44 loads that archived week; the regex restricts it to archive/ files only
@@ -139,7 +154,7 @@ const fit=ol=>{
     main.forEach(c=>grid.append(card(c)));
     if(d["Frontier labs"]&&d["Frontier labs"].length)labsBox.append(card("Frontier labs"));
     if(!matchMedia("(max-width:600px)").matches)
-      document.querySelectorAll(".card ol").forEach(fit);
+      document.querySelectorAll(".card").forEach(fit);
   };
   (document.fonts?document.fonts.ready:Promise.resolve()).then(draw);
   let lastW=innerWidth,t;
