@@ -1,0 +1,25 @@
+name: weekly-news
+on:
+  schedule:
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@PASTE_FULL_SHA
+      - uses: actions/setup-python@PASTE_FULL_SHA
+        with: { python-version: "3.13" }
+      - run: python scripts/build.py
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+          SECOND_PASS: "0"
+      - run: |
+          git config user.name "news-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add docs/data.json
+          git commit -m "weekly update" || exit 0
+          git push
