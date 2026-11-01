@@ -14,8 +14,13 @@ SWISS = [("artificial intelligence Swiss labour market", CH),
          ("AI Switzerland employees workplace skills", CH),
          ("Swiss employers AI hiring training", CH),
          ("Switzerland AI jobs study report", CH)]
+# Preferred sources (priority): items from these get a lower score threshold
+PREF = [("site:xda-developers.com AI", US),
+        ("site:swissinfo.ch artificial intelligence", US),
+        ("site:news.ycombinator.com AI", US)]
+PREF_MIN = 6       # threshold for preferred sources (others need 7)
 PER_QUERY = 20     # items kept per query, so late queries are not cut off
-MAX_ITEMS = 200
+MAX_ITEMS = 260
 
 MODEL, KEY = os.environ["GEMINI_MODEL"], os.environ["GEMINI_API_KEY"]
 SECOND_PASS = os.environ.get("SECOND_PASS") == "1"
@@ -52,8 +57,10 @@ def short(t):
 
 
 # ---------- 1. fetch + dedupe ----------
-seen, items = set(), []
-for q, ed in [(q, US) for q in QUERIES] + SWISS:
+seen, items, by_key = set(), [], {}
+jobs = [(q, ed, True) for q, ed in PREF] + [(q, US, False) for q in QUERIES] \
+       + [(q, ed, False) for q, ed in SWISS]
+for q, ed, pref in jobs:
     url = ("https://news.google.com/rss/search?q="
            + urllib.parse.quote(q + " when:7d") + ed)
     try:
@@ -64,10 +71,16 @@ for q, ed in [(q, US) for q in QUERIES] + SWISS:
     for it in root.findall(".//item")[:PER_QUERY]:
         t = it.findtext("title") or ""
         k = t.lower()[:60]
-        if t and k not in seen:
-            seen.add(k)
-            items.append({"title": t, "link": it.findtext("link"),
-                          "source": it.findtext("source")})
+        if not t:
+            continue
+        if k in seen:
+            if pref:
+                by_key[k]["pref"] = True   # same story also seen via a preferred query
+            continue
+        seen.add(k)
+        items.append({"title": t, "link": it.findtext("link"),
+                      "source": it.findtext("source"), "pref": pref})
+        by_key[k] = items[-1]
 items = items[:MAX_ITEMS]
 if not items:
     raise SystemExit("no news fetched")
@@ -127,11 +140,13 @@ if SECOND_PASS:
                 by_id[r["id"]].update(score=r["score"], type=r["type"])
 
 # ---------- 4. keep ----------
+# Preferred sources need score >= PREF_MIN, others 7.
 # Work & Jobs survives only if the story is Swiss
 kept = {n: {**items[n], "score": r["score"], "type": r["type"],
             "category": r["category"], "swiss": r.get("swiss", False)}
         for n, r in by_id.items()
-        if r["score"] >= 7 and r["type"] != "hype"
+        if r["score"] >= (PREF_MIN if items[n].get("pref") else 7)
+        and r["type"] != "hype"
         and (r["category"] != "Work & Jobs" or r.get("swiss", False))}
 
 # ---------- 5. dedupe: same story from different outlets ----------
@@ -149,6 +164,8 @@ if len(kept) > 1:
             if len(ids) < 2:
                 continue
             best = max(ids, key=lambda i: kept[i]["score"])
+            if any(kept[i].get("pref") for i in ids):
+                kept[best]["pref"] = True
             kept[best]["also"] = [kept[i]["source"] for i in ids
                                   if i != best and kept[i].get("source")]
             for i in ids:
@@ -167,7 +184,7 @@ for k in kept.values():
     else:
         cat = k["category"]
     out.setdefault(cat, []).append(
-        {x: k[x] for x in ("title", "link", "source", "score", "also") if x in k})
+        {x: k[x] for x in ("title", "link", "source", "score", "also", "pref") if x in k})
 for c in out:
     out[c] = sorted(out[c], key=lambda x: -x["score"])[:5]
 
