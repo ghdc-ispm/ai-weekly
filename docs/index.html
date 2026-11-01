@@ -21,7 +21,7 @@ a:hover{text-decoration-color:currentColor}
 .hero h2{font:700 clamp(1.35rem,4.5vw,2.2rem)/1.2 Georgia,serif;margin:8px 0}
 .src{color:var(--muted);font-size:.8rem}
 
-/* fixed grid: 3 columns x 2 rows, then Frontier labs full width */
+/* fixed grid: 3 columns x 2 rows of fixed slots, then "Other" full width */
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
 .card{display:flex;flex-direction:column;height:var(--ch);overflow:hidden;background:var(--card);border:1px solid var(--line);border-top:4px solid hsl(var(--h) 70% 50%);border-radius:14px;padding:18px 20px}
 .card.open{height:auto}
@@ -35,27 +35,28 @@ a:hover{text-decoration-color:currentColor}
 .card li .src{display:block;margin-top:2px}
 .card li.hid{display:none}
 .card.open li.hid{display:block}
+.card li.empty{counter-increment:none;padding-left:0;color:var(--muted);font-style:italic}
+.card li.empty::before{content:none}
 .card li.more{counter-increment:none;padding-left:0}
 .card li.more::before{content:none}
 .card li.more button{background:none;border:0;padding:4px 0;font:inherit;font-size:.85rem;font-weight:700;color:hsl(var(--h) 70% 45%);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
-.labs{height:var(--lh);margin-top:16px}
-.labs.open{height:auto}
-.labs ol{display:grid;grid-template-columns:repeat(3,1fr);column-gap:28px;align-content:start}
-.labs li,.labs li:first-child{border-top:0;border-bottom:1px solid var(--line)}
-.labs li.more{grid-column:1/-1;border-bottom:0}
+.other{height:var(--lh);margin-top:16px}
+.other ol{display:grid;grid-template-columns:repeat(3,1fr);column-gap:28px;align-content:start}
+.other li,.other li:first-child{border-top:0;border-bottom:1px solid var(--line)}
+.other li.more{grid-column:1/-1;border-bottom:0}
 .past{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:28px}
 .past a{display:inline-block;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--card);text-decoration:none;font-size:.8rem}
 footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:36px}
 
 @media(max-width:899px){
   .grid{grid-template-columns:repeat(2,1fr)}
-  .labs ol{grid-template-columns:repeat(2,1fr)}
+  .other ol{grid-template-columns:repeat(2,1fr)}
 }
 /* phone: single column, natural height, nothing hidden */
 @media(max-width:600px){
   :root{--ch:auto;--lh:auto}
   .grid{grid-template-columns:1fr}
-  .labs ol{grid-template-columns:1fr}
+  .other ol{grid-template-columns:1fr}
   .wrap{padding:0 14px 36px}
   header{padding:28px 0 18px;margin-bottom:20px}
   .hero{padding:18px;border-radius:14px}
@@ -85,9 +86,16 @@ const link=i=>{
   if(/^https:\/\//.test(i.link)){a.href=i.link;a.rel="noopener noreferrer";a.target="_blank"}
   return a;
 };
+// fixed slots, in reading order: row 1 = first three, row 2 = last three
+const SLOTS=["Business & Strategy","Work & Jobs","Tools & Dev",
+             "Frontier labs","Privacy & Safety","Food for thought"];
+const HUE={"Business & Strategy":30,"Work & Jobs":250,"Tools & Dev":130,
+           "Frontier labs":200,"Privacy & Safety":160,"Food for thought":280,"Other":330};
+
 // if items overflow the fixed card height: hide the extras and add a "Read more" button
 const fit=card=>{
   const ol=card.querySelector("ol");
+  if(ol.querySelector(".empty"))return;
   const over=()=>ol.scrollHeight>ol.clientHeight+1;
   if(!over())return;
   const items=[...ol.querySelectorAll("li")];
@@ -114,13 +122,13 @@ const fit=card=>{
 
   const app=document.getElementById("app");
   const cats=Object.keys(d).filter(c=>d[c].length);
-  const hue=c=>({"Food for thought":280,"Frontier labs":200})[c]??((cats.indexOf(c)*47+12)%360);
 
   // hero = best-scored item (Frontier labs excluded: no scores)
   const all=cats.filter(c=>c!=="Frontier labs").flatMap(c=>d[c].map(i=>({...i,c})));
-  const lead=all.sort((a,b)=>b.score-a.score)[0];
+  const lead=all.sort((a,b)=>(b.score||0)-(a.score||0))[0];
+  const heroCat=lead?lead.c:null;
   if(lead){
-    const h=el("section","hero");h.style.setProperty("--h",hue(lead.c));
+    const h=el("section","hero");h.style.setProperty("--h",HUE[lead.c]??210);
     const h2=el("h2");h2.append(link(lead));
     h.append(el("div","kicker","Top story · "+lead.c),h2);
     if(lead.source)h.append(el("div","src",lead.source));
@@ -128,18 +136,24 @@ const fit=card=>{
     d[lead.c]=d[lead.c].filter(i=>i.link!==lead.link);
   }
 
-  // the 6 fullest categories fill the 2x3 grid
-  const main=cats.filter(c=>c!=="Frontier labs"&&d[c].length)
-    .sort((a,b)=>d[b].length-d[a].length).slice(0,6);
-  const grid=el("div","grid"),labsBox=el("div");
-  app.append(grid,labsBox);
+  // slot lists; everything not in a slot (Other, Rules & Society, new names) goes to "Other"
+  const L={};
+  SLOTS.forEach(c=>L[c]=d[c]||[]);
+  L["Other"]=Object.keys(d).filter(c=>!SLOTS.includes(c))
+    .flatMap(c=>d[c]).sort((a,b)=>(b.score||0)-(a.score||0));
 
-  const card=c=>{
-    const s=el("section","card"+(c==="Frontier labs"?" labs":""));
-    s.style.setProperty("--h",hue(c));
+  const grid=el("div","grid"),otherBox=el("div");
+  app.append(grid,otherBox);
+
+  const card=(c,cls)=>{
+    const s=el("section","card"+(cls?" "+cls:""));
+    s.style.setProperty("--h",HUE[c]??210);
     s.append(el("h3","",c));
     const ol=el("ol");
-    for(const i of d[c]){
+    if(!L[c].length){
+      ol.append(el("li","empty",c===heroCat?"Top story is shown above":"No major news this week"));
+    }
+    for(const i of L[c]){
       const li=el("li");li.append(link(i));
       if(i.source)li.append(el("span","src",i.source));
       if(i.also&&i.also.length)li.append(el("span","src","Also: "+i.also.join(", ")));
@@ -150,9 +164,9 @@ const fit=card=>{
   };
 
   const draw=()=>{
-    grid.replaceChildren();labsBox.replaceChildren();
-    main.forEach(c=>grid.append(card(c)));
-    if(d["Frontier labs"]&&d["Frontier labs"].length)labsBox.append(card("Frontier labs"));
+    grid.replaceChildren();otherBox.replaceChildren();
+    SLOTS.forEach(c=>grid.append(card(c)));
+    if(L["Other"].length)otherBox.append(card("Other","other"));   // hidden when empty
     if(!matchMedia("(max-width:600px)").matches)
       document.querySelectorAll(".card").forEach(fit);
   };
