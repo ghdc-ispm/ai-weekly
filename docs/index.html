@@ -19,7 +19,7 @@ header p{margin:8px 0 0;color:var(--muted)}
 #date{text-transform:uppercase;letter-spacing:.12em;font-size:.75rem}
 a{color:inherit;text-decoration-color:var(--line);text-underline-offset:3px}
 a:hover{text-decoration-color:currentColor}
-.hero{background:var(--card);border:1px solid var(--line);border-left:8px solid var(--c,#F10101);border-radius:0;padding:28px;margin-bottom:20px}
+.hero{background:var(--card);border:1px solid var(--line);border-left:8px solid var(--c,#f10101);border-radius:0;padding:28px;margin-bottom:20px}
 .kicker{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .hero h2 {
   font: 500 clamp(1.1rem, 2.5vw, 1.4rem)/1.3 var(--sans);
@@ -53,7 +53,13 @@ a:hover{text-decoration-color:currentColor}
 .past{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:28px}
 .past a{display:inline-block;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--card);text-decoration:none;font-size:.8rem}
 footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:36px}
-
+  
+@media(min-width:900px){
+  .card li a{font-size:.9rem;line-height:1.3}
+  .card li .src{font-size:.72rem}
+  .card li{padding:7px 0 7px 24px}
+  .card li::before{top:7px;font-size:.9rem}
+}
 @media(max-width:899px){
   .grid{grid-template-columns:repeat(2,1fr)}
   .other ol{grid-template-columns:repeat(2,1fr)}
