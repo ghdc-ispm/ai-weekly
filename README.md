@@ -4,6 +4,8 @@ A weekly AI news page for executives, workers worried about their jobs, and deve
 
 Free-tier stack, Python standard library only (no third-party packages).
 
+https://ghdc-ispm.github.io/ai-weekly
+
 ## How it works
 
 ```
