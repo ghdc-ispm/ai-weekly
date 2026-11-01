@@ -7,7 +7,7 @@
 @font-face{font-family:"Noto Serif";font-style:normal;font-weight:100 900;font-display:swap;src:url(fonts/noto-serif-latin-wght-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 @font-face{font-family:"Montserrat";font-style:normal;font-weight:100 900;font-display:swap;src:url(fonts/montserrat-latin-wght-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 @font-face{font-family:"Noto Sans";font-style:normal;font-weight:100 900;font-display:swap;src:url(fonts/noto-sans-latin-wght-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
-:root{--serif:"Noto Serif",-apple-system,BlinkMacSystemFont,"Segoe UI","Roboto","Oxygen-Sans","Ubuntu","Cantarell","Helvetica Neue",sans-serif;--head:"Montserrat",-apple-system,BlinkMacSystemFont,"Segoe UI","Roboto","Oxygen-Sans","Ubuntu","Cantarell","Helvetica Neue",sans-serif;--sans:"Noto Sans",-apple-system,BlinkMacSystemFont,"Segoe UI","Roboto","Oxygen-Sans","Ubuntu","Cantarell","Helvetica Neue",sans-serif;--bg:#f6f4ef;--card:#fff;--ink:#1a1a1a;--muted:#6b6b6b;--line:#e6e2d9;--ch:400px;--lh:250px}
+:root{--serif:"Noto Serif",-apple-system,BlinkMacSystemFont,"Segoe UI","Roboto","Oxygen-Sans","Ubuntu","Cantarell","Helvetica Neue",sans-serif;--head:"Montserrat",-apple-system,BlinkMacSystemFont,"Segoe UI","Roboto","Oxygen-Sans","Ubuntu","Cantarell","Helvetica Neue",sans-serif;--sans:"Noto Sans",-apple-system,BlinkMacSystemFont,"Segoe UI","Roboto","Oxygen-Sans","Ubuntu","Cantarell","Helvetica Neue",sans-serif;--bg:#f6f4ef;--card:#fff;--ink:#1a1a1a;--muted:#6b6b6b;--line:#e6e2d9;--ch:400px;--lh:250px;--py:18px;--px:20px}
 @media(prefers-color-scheme:dark){:root{--bg:#121212;--card:#1c1c1e;--ink:#ececec;--muted:#9a9a9a;--line:#2c2c2e}}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
@@ -19,16 +19,16 @@ header p{margin:8px 0 0;color:var(--muted)}
 #date{text-transform:uppercase;letter-spacing:.12em;font-size:.75rem}
 a{color:inherit;text-decoration-color:var(--line);text-underline-offset:3px}
 a:hover{text-decoration-color:currentColor}
-.hero{background:var(--card);border:1px solid var(--line);border-radius:0;padding:28px;margin-bottom:20px}
-.kicker{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:hsl(var(--h,12) 70% 45%)}
+.hero{background:var(--card);border:1px solid var(--line);border-left:8px solid var(--c,#d9d9d9);border-radius:0;padding:28px;margin-bottom:20px}
+.kicker{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .hero h2{font:700 clamp(1.2rem,3.5vw,1.7rem)/1.25 var(--sans);margin:8px 0}
 .src{color:var(--muted);font-size:.8rem}
 
 /* fixed grid: 3 columns x 2 rows of fixed slots, then "Other" full width */
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
-.card{display:flex;flex-direction:column;height:var(--ch);overflow:hidden;background:var(--card);border:1px solid var(--line);border-top:4px solid hsl(var(--h) 70% 50%);border-radius:0;padding:18px 20px;font-family:var(--serif)}
+.card{display:flex;flex-direction:column;height:var(--ch);overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:0;padding:var(--py) var(--px);font-family:var(--serif)}
 .card.open{height:auto}
-.card h3{flex:none;margin:0 0 10px;font-family:var(--head);font-weight:700;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:hsl(var(--h) 70% 45%)}
+.card h3{flex:none;font-family:var(--head);font-weight:700;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:#1a1a1a;background:var(--c);margin:calc(-1*var(--py)) calc(-1*var(--px)) 12px;padding:12px var(--px)}
 .card ol{flex:1;min-height:0;overflow:hidden;margin:0;padding:0;list-style:none;counter-reset:n}
 .card.open ol{flex:none;overflow:visible}
 .card li{counter-increment:n;padding:10px 0 10px 28px;position:relative;border-top:1px solid var(--line)}
@@ -42,7 +42,7 @@ a:hover{text-decoration-color:currentColor}
 .card li.empty::before{content:none}
 .card li.more{counter-increment:none;padding-left:0}
 .card li.more::before{content:none}
-.card li.more button{background:none;border:0;padding:4px 0;font:inherit;font-size:.85rem;font-weight:700;color:hsl(var(--h) 70% 45%);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.card li.more button{background:none;border:0;padding:4px 0;font:inherit;font-size:.85rem;font-weight:700;color:var(--ink);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 .other{height:var(--lh);margin-top:16px}
 .other ol{display:grid;grid-template-columns:repeat(3,1fr);column-gap:28px;align-content:start}
 .other li,.other li:first-child{border-top:0;border-bottom:1px solid var(--line)}
@@ -57,13 +57,12 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:36px}
 }
 /* phone: single column, natural height, nothing hidden */
 @media(max-width:600px){
-  :root{--ch:auto;--lh:auto}
+  :root{--ch:auto;--lh:auto;--py:14px;--px:16px}
   .grid{grid-template-columns:1fr}
   .other ol{grid-template-columns:1fr}
   .wrap{padding:0 14px 36px}
   header{padding:28px 0 18px;margin-bottom:20px}
   .hero{padding:18px}
-  .card{padding:14px 16px}
   .card li{padding:12px 0 12px 26px}
   .card li::before{top:12px}
 }
@@ -92,8 +91,8 @@ const link=i=>{
 // fixed slots, in reading order: row 1 = first three, row 2 = last three
 const SLOTS=["Business & Strategy","Work & Jobs","Tools & Dev",
              "Frontier labs","Privacy & Safety","Food for thought"];
-const HUE={"Business & Strategy":30,"Work & Jobs":250,"Tools & Dev":130,
-           "Frontier labs":200,"Privacy & Safety":160,"Food for thought":280,"Other":330};
+const COL={"Business & Strategy":"#A4B5FA","Work & Jobs":"#98FAFA","Tools & Dev":"#19FAAE",
+           "Frontier labs":"#FDFDAC","Privacy & Safety":"#FCD08F","Food for thought":"#FA9B88","Other":"#D9DBDE"};
 
 // if items overflow the fixed card height: hide the extras and add a "Read more" button
 const fit=card=>{
@@ -131,7 +130,7 @@ const fit=card=>{
   const lead=all.sort((a,b)=>(b.score||0)-(a.score||0))[0];
   const heroCat=lead?lead.c:null;
   if(lead){
-    const h=el("section","hero");h.style.setProperty("--h",HUE[lead.c]??210);
+    const h=el("section","hero");h.style.setProperty("--c",COL[lead.c]||"#D9DBDE");
     const h2=el("h2");h2.append(link(lead));
     h.append(el("div","kicker","Top story · "+lead.c),h2);
     if(lead.source)h.append(el("div","src",lead.source));
@@ -154,7 +153,7 @@ const fit=card=>{
 
   const card=(c,cls)=>{
     const s=el("section","card"+(cls?" "+cls:""));
-    s.style.setProperty("--h",HUE[c]??210);
+    s.style.setProperty("--c",COL[c]||"#D9DBDE");
     s.append(el("h3","",c));
     const ol=el("ol");
     if(!L[c].length){
