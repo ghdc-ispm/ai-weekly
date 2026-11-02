@@ -1,7 +1,8 @@
 name: weekly-news
 on:
-  schedule:
-    - cron: "0 7 * * 1"
+    schedule:
+    - cron: "23 7 * * 1"
+    - cron: "41 9 * * 1"
   workflow_dispatch:
 permissions:
   contents: write
