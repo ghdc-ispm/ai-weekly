@@ -1,16 +1,20 @@
 name: weekly-news
 on:
     schedule:
-    - cron: "23 7 * * 1"
-    - cron: "41 9 * * 1"
-    - cron: "25 9 2 11 *"   # TEST: 2 Nov only, delete afterwards
+    - cron: "*/5 * * * *"
+      timezone: "Europe/Zurich"
   workflow_dispatch:
+  
 permissions:
   contents: write
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Show trigger information
+        run: |
+          echo "Triggered by: ${{ github.event_name }}"
+          echo "Time: $(date)"
       - uses: actions/checkout@f93ca50bde35f63a65c67fc94cc8821ead20e631
       - uses: actions/setup-python@8549b9f8f590ad24eab7482f36f6e1e24d34597b
         with: { python-version: "3.13" }
