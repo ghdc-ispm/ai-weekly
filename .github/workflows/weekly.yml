@@ -1,7 +1,8 @@
 name: weekly-news
 on:
   schedule:
-    - cron: "23 7 * * 1"  
+    - cron: "17 1 * * 1"   # main slot
+    - cron: "17 2 * * 1"   # fallback, 1 hour later
   workflow_dispatch:   
   
 permissions:
